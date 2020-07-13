@@ -47,7 +47,7 @@ Documentación oficial de Laravel: https://laravel.com/docs/7.x
 Listo ya podrás instalar este proyecto. 
 **Instalación de proyecto correctamente:**
 1. Descarga o clónalo el proyecto: 
-<p>• git clone git//:github.com:driosoft-pro/La_Ruleta_Casino.git</p>
+<p>• git clone git://github.com/driosoft-pro/Ruleta_Phpt</p>
 2. Ejecuta el comando: 
 <p>• composer install</p>
 3. para copiar el archivo .env.example y pegarlo con el nombre. env. ejecuta siguiente comando: 
