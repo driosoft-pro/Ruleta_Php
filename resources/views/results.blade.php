@@ -67,16 +67,13 @@
                                         <th scope="col">${{$info["valor"]}}</th>
                                         <th scope="col">${{$info["wine"]}}</th>
                                         <th scope="col">
-                                            @if ($info["cPlayer"] == 'Green')
-                                                Ganaste 15 veces tu Apuesta
-                                            @endif
-                                            @if ($info["cPlayer"] == 'Red')
-                                                Ganaste el Doble
-                                            @endif
-                                            @if ($info["cPlayer"] == 'Black')
-                                                Ganaste el Doble
-                                            @endif
-                                            @if ($info["cPlayer"] == '')
+                                            @if ($info["won"])
+                                                @if ($info["cPlayer"] == 'Green')
+                                                    Ganaste 15 veces tu Apuesta
+                                                @elseif ($info["cPlayer"] == 'Red' || $info["cPlayer"] == 'Black')
+                                                    Ganaste el Doble
+                                                @endif
+                                            @else
                                                 Gana la Casa
                                             @endif
                                         </th>

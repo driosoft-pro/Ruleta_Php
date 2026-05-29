@@ -29,6 +29,12 @@ class PlayerController extends Controller{
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'color' => 'required|string|in:Green,Red,Black',
+            'bet' => 'required|integer|between:8,15',
+        ]);
+
         //Nuevo jugador
         $player = new Player;
 
@@ -39,7 +45,7 @@ class PlayerController extends Controller{
 
         $player->save();
 
-        return back()->with('insert');
+        return back()->with('insert', '¡Jugador registrado con éxito!');
     }
     /**
      * Show the form for editing the specified resource.
@@ -64,6 +70,13 @@ class PlayerController extends Controller{
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'money' => 'required|numeric|min:0',
+            'color' => 'required|string|in:Green,Red,Black',
+            'bet' => 'required|integer|between:8,15',
+        ]);
+
         $player = Player::findOrFail($id);
 
         $player->name = $request->get('name');
@@ -74,7 +87,7 @@ class PlayerController extends Controller{
 
         $player->update();
 
-        return back()->with('update', 'Actualizo!!');
+        return back()->with('update', '¡Jugador actualizado con éxito!');
     }
 
     /**
@@ -90,10 +103,10 @@ class PlayerController extends Controller{
         $eliminado = $player->name;
         //eliminacion de jugador
         $player->delete();
-        return back()->with('destroy');
+        return back()->with('destroy', '¡Jugador eliminado con éxito!');
     }
 
-        /**
+    /**
      * Display a listing of the resource.
      *
      * Funsion genera los randos de los jugadores al apostar
@@ -101,6 +114,10 @@ class PlayerController extends Controller{
     public function bet($id){
         //Apostador
         $player = Player::findOrFail($id);
+
+        if ($player->money <= 0) {
+            return redirect()->route('index')->with('destroy', 'El jugador no tiene fondos para apostar.');
+        }
 
         //Variable de inicio
         $wMoney = 0;
@@ -110,8 +127,6 @@ class PlayerController extends Controller{
         //Condicion para verificar la apuesta
         if($player->money <= 1000){
             $vBet = $player->money;
-        }else if($player->money <= 0){
-            $vBet = 0;
         }else{
             $vBet = ($player->money * $player->bet)/100;
         }
@@ -121,28 +136,34 @@ class PlayerController extends Controller{
             $rColor = "Green";
         }else if($rand/100 < 0.49){
             $rColor = "Red";
-        }else if($rand/100 < 1){
+        }else{
             $rColor = "Black";
         }
         
+        $won = ($player->color === $rColor);
+
         //Condiciones para recuperar el dinero
-        if($rColor == "Red" && $player->color == $rColor){
-            $wMoney = $vBet*2;
+        if($won){
+            if($rColor == "Green"){
+                $wMoney = $vBet*15;
+            }else{
+                $wMoney = $vBet*2;
+            }
             $total = $player->money+$wMoney;
-            $info = ['valor'=>$vBet,'wine'=> $wMoney, 'rColor' =>$rColor ,'cPlayer' =>$player->color, 'total'=>$total, "bet" => $player->bet];
-        }else if($rColor == "Black" && $player->color == $rColor){
-            $wMoney = $vBet*2;
-            $total = $player->money+$wMoney;
-            $info = ['valor'=>$vBet,'wine'=> $wMoney, 'rColor' =>$rColor ,'cPlayer' =>$player->color, 'total'=>$total, "bet" => $player->bet];
-        }else if($rColor == "Green" && $player->color == $rColor){
-            $wMoney = $vBet*15;
-            $total = $player->money+$wMoney;
-            $info = ['valor'=>$vBet,'wine'=> $wMoney, 'rColor' =>$rColor ,'cPlayer' =>$player->color, 'total'=>$total, "bet" => $player->bet];
         }else{
             $wMoney =$vBet;
             $total = $player->money-$wMoney;
-            $info = ['valor'=>$vBet,'wine'=> $wMoney, 'rColor' =>$rColor ,'cPlayer' =>$player->color, 'total'=>$total, "bet" => $player->bet];
         }
+
+        $info = [
+            'valor' => $vBet,
+            'wine' => $wMoney,
+            'rColor' => $rColor,
+            'cPlayer' => $player->color,
+            'total' => $total,
+            'bet' => $player->bet,
+            'won' => $won
+        ];
 
         //Resultado de apuesta
         $player->money = $total;
@@ -150,7 +171,6 @@ class PlayerController extends Controller{
         
         //Vista informativa de las apuesta
         return view('results', compact('info'));
-        
     }
 
     public function info()
